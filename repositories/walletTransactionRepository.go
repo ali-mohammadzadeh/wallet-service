@@ -7,11 +7,12 @@ import (
 )
 
 type WalletTransaction struct {
-	Id          string `json:"id"`
-	WalletId    string `json:"walletId"`
-	Amount      int    `json:"amount"`
-	Description string `json:"description"`
-	Type        int    `json:"type"`
+	Id           string `json:"id"`
+	WalletId     string `json:"walletId"`
+	Amount       int    `json:"amount"`
+	Description  string `json:"description"`
+	TrackingCode string `json:"trackingCode"`
+	Type         int    `json:"type"`
 }
 
 func (instance *WalletTransaction) Insert() (string, error) {
@@ -23,13 +24,13 @@ func (instance *WalletTransaction) Insert() (string, error) {
 	//}
 	//defer db.Close()
 
-	insert, errInsert := db.SqlClient.Prepare("insert into wallet_transactions (id,walletId,amount,type,description) values (?,?,?,?,?)")
+	insert, errInsert := db.SqlClient.Prepare("insert into wallet_transactions (id,walletId,amount,type,description,trackingCode) values (?,?,?,?,?,?)")
 	if errInsert != nil {
 		log.Error(errInsert.Error())
 		return "", errInsert
 	}
 
-	insert.Exec(instance.Id, instance.WalletId, instance.Amount, instance.Type, instance.Description)
+	insert.Exec(instance.Id, instance.WalletId, instance.Amount, instance.Type, instance.Description, instance.TrackingCode)
 	defer insert.Close()
 	log.WithFields(
 		log.Fields{

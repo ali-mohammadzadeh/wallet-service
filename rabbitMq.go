@@ -11,15 +11,17 @@ import (
 
 func failOnError(err error, msg string) {
 	if err != nil {
-		log.Panicf("%s: %s", msg, err)
+		fmt.Println(err)
+		fmt.Println(msg)
 	}
 }
 
 type Request struct {
-	Id         string `json:"id"`
-	DiscountId string `json:"discountId"`
-	Username   string `json:"username"`
-	Amount     int    `json:"amount"`
+	Id           string `json:"id"`
+	DiscountId   string `json:"discountId"`
+	Username     string `json:"username"`
+	Amount       int    `json:"amount"`
+	TrackingCode string `json:"trackingCode"`
 }
 
 func rabbitConsume(channel amqp.Channel) {
@@ -51,10 +53,15 @@ func rabbitConsume(channel amqp.Channel) {
 			walletTransaction.Amount = req.Amount
 			walletTransaction.Description = "GIFT"
 			walletTransaction.Type = 1
-			result, _ := logics.AddTransactionLogic(wallet, walletTransaction)
-			failOnError(err, "org error")
-			fmt.Println("transaction added successfully! =>", result)
-			d.Ack(false)
+			walletTransaction.TrackingCode = req.TrackingCode
+			result, err := logics.AddTransactionLogic(wallet, walletTransaction)
+			if err == nil {
+				d.Ack(false)
+				fmt.Println("transaction added successfully! =>", result)
+			} else {
+				failOnError(err, "org error")
+			}
+
 		}
 	}()
 
